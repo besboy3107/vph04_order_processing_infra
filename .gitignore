@@ -1,0 +1,11 @@
+.env
+registry/auth/
+registry/data/
+postgres_data/
+pgadmin_data/
+*.log
+
+# Скриншоты и временные файлы — не в репозиторий
+*.png
+*.jpg
+*.zip
