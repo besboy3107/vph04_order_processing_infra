@@ -2,21 +2,24 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.core.security import require_admin
 from app.models.applications import ApplicationCRUD
 from app.models.behavior_metrics import BehaviorMetricCRUD
 from app.schemas import BehaviorMetricIn
 
 router = APIRouter(prefix="/behavior-metrics", tags=["behavior-metrics"])
 
+admin_only = [Depends(require_admin)]
 
-@router.get("")
+
+@router.get("", dependencies=admin_only)
 def list_metrics():
     return BehaviorMetricCRUD.list()
 
 
-@router.get("/{application_id}")
+@router.get("/{application_id}", dependencies=admin_only)
 def get_metric(application_id: int):
     item = BehaviorMetricCRUD.get(application_id)
     if item is None:

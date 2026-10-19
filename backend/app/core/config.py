@@ -25,6 +25,10 @@ DOCS_ENABLED = _env("BACKEND_DOCS_ENABLED", "1") not in ("0", "false", "False", 
 # правильно построить путь к openapi.json за обратным прокси.
 ROOT_PATH = _env("BACKEND_ROOT_PATH", "/api")
 
+# Доступ в админ-панель (HTTP Basic). Проверяет backend на защищённых эндпоинтах.
+ADMIN_USER = _env("ADMIN_PANEL_USER", "admin")
+ADMIN_PASSWORD = _env("ADMIN_PANEL_PASSWORD", "")
+
 CONNINFO = (
     f"host={DB_HOST} port={DB_PORT} dbname={DB_NAME} "
     f"user={DB_USER} password={DB_PASSWORD}"

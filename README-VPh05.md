@@ -46,6 +46,17 @@ frontend/                    webpack + npm, white elite theme, Google Fonts (Nun
 
 Скриншоты работающего проекта — в папке [`screenshots/`](screenshots/).
 
+## Безопасность (шаг части 3): закрытый /docs + авторизация админки
+
+- **Swagger закрыт**: `BACKEND_DOCS_ENABLED=0` → `/api/docs` и `/api/openapi.json` отдают 404.
+- **Авторизация** (HTTP Basic, `app/core/security.py`, креды в `.env`: `ADMIN_PANEL_USER` / `ADMIN_PANEL_PASSWORD`):
+  - Публичны только то, что нужно клиентскому сайту: `GET /admin-settings`, `POST /applications`, `POST /behavior-metrics`.
+  - Под авторизацией: создание/изменение/удаление услуг, а также **чтение заявок и метрик** (`GET /applications`, `GET /behavior-metrics`) — там персональные данные клиентов.
+  - `GET /admin/check` — проверка входа.
+- **Страница `/admin`** открывается с экраном входа; после успешного входа показывает управление услугами и список заявок. Логин хранится в `sessionStorage` и шлётся заголовком `Authorization: Basic`.
+
+Проверено: `/api/docs`→404; `POST /admin-settings` и `GET /applications` без логина→401, с логином→201/200; `POST /applications` (приём с сайта)→201 остаётся публичным.
+
 ## Ключевой фикс 405/307
 
 FastAPI по умолчанию редиректит `/applications` ↔ `/applications/` статусом 307, что за

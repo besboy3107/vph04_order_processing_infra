@@ -89,9 +89,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      # /docs открыт на время тестирования (как в уроке). В бою выставить 0.
-      BACKEND_DOCS_ENABLED: ${BACKEND_DOCS_ENABLED:-1}
+      # /docs по умолчанию закрыт (часть 2). Для отладки можно включить BACKEND_DOCS_ENABLED=1.
+      BACKEND_DOCS_ENABLED: ${BACKEND_DOCS_ENABLED:-0}
       BACKEND_ROOT_PATH: /api
+      # Доступ в админ-панель (HTTP Basic).
+      ADMIN_PANEL_USER: ${ADMIN_PANEL_USER:-admin}
+      ADMIN_PANEL_PASSWORD: ${ADMIN_PANEL_PASSWORD}
     # Приватный сервис: порт наружу НЕ публикуется, доступен только внутри сети и через nginx (/api).
     expose:
       - "8000"

@@ -17,54 +17,97 @@
     <div class="container">
       <header class="hero" style="padding-bottom: 0">
         <div class="brand">Aurum Detailing · Admin</div>
-        <h1>Услуги и диапазоны бюджета</h1>
+        <h1>Панель администратора</h1>
       </header>
 
-      <section class="card">
-        <div class="topbar">
-          <div>
-            <h2>Настройки сервиса</h2>
-            <p class="sub">Эти услуги клиент видит в выпадающем списке на сайте.</p>
+      <!-- Экран входа -->
+      <section class="card" id="login" style="max-width: 460px; margin-left: auto; margin-right: auto">
+        <h2>Вход</h2>
+        <p class="sub">Доступ только для администратора.</p>
+        <form id="login-form">
+          <div class="field">
+            <label for="login-user">Логин</label>
+            <input type="text" id="login-user" autocomplete="username" required />
           </div>
-          <a href="/">← на клиентский сайт</a>
-        </div>
-
-        <form id="svc-form">
-          <div class="grid">
-            <div class="field">
-              <label for="services">Название услуги *</label>
-              <input type="text" id="services" placeholder="Напр. Полировка кузова" required />
-            </div>
-            <div class="field">
-              <label for="budget_range">Диапазон бюджета *</label>
-              <input type="text" id="budget_range" placeholder="Напр. 100k-900k" required />
-            </div>
+          <div class="field">
+            <label for="login-pass">Пароль</label>
+            <input type="password" id="login-pass" autocomplete="current-password" required />
           </div>
           <div class="actions">
-            <button type="submit" class="btn" id="add-btn">Добавить услугу</button>
+            <button type="submit" class="btn" id="login-btn">Войти</button>
           </div>
-          <div class="message" id="message"></div>
+          <div class="message" id="login-message"></div>
         </form>
       </section>
 
-      <section class="card">
-        <h2>Текущие услуги</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Услуга</th>
-              <th>Бюджет</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="rows">
-            <tr>
-              <td colspan="4">Загрузка…</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
+      <!-- Панель (видна после входа) -->
+      <div id="panel" style="display: none">
+        <section class="card">
+          <div class="topbar">
+            <div>
+              <h2>Настройки сервиса</h2>
+              <p class="sub">Эти услуги клиент видит в выпадающем списке на сайте.</p>
+            </div>
+            <div>
+              <a href="/">← на сайт</a> ·
+              <a href="#" id="logout">Выйти</a>
+            </div>
+          </div>
+
+          <form id="svc-form">
+            <div class="grid">
+              <div class="field">
+                <label for="services">Название услуги *</label>
+                <input type="text" id="services" placeholder="Напр. Полировка кузова" required />
+              </div>
+              <div class="field">
+                <label for="budget_range">Диапазон бюджета *</label>
+                <input type="text" id="budget_range" placeholder="Напр. 100k-900k" required />
+              </div>
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn" id="add-btn">Добавить услугу</button>
+            </div>
+            <div class="message" id="message"></div>
+          </form>
+        </section>
+
+        <section class="card">
+          <h2>Текущие услуги</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Услуга</th>
+                <th>Бюджет</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="4">Загрузка…</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card">
+          <h2>Заявки клиентов</h2>
+          <p class="sub">Персональные данные — доступны только после входа.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Клиент</th>
+                <th>Услуга</th>
+                <th>Бюджет</th>
+                <th>Связь</th>
+              </tr>
+            </thead>
+            <tbody id="app-rows">
+              <tr><td colspan="5">Загрузка…</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
     </div>
   </body>
 </html>

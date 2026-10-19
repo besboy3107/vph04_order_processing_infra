@@ -10,10 +10,11 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, Depends, FastAPI
 
 from app.core import db
 from app.core.config import DOCS_ENABLED, ROOT_PATH
+from app.core.security import require_admin
 from app.routes import admin_settings, applications, behavior_metrics
 
 
@@ -49,3 +50,9 @@ app.include_router(api)
 @app.get("/health", tags=["service"])
 def health():
     return {"status": "ok"}
+
+
+@app.get("/admin/check", tags=["admin"])
+def admin_check(user: str = Depends(require_admin)):
+    """Проверка логина админ-панели: 200 при верных данных, иначе 401."""
+    return {"ok": True, "user": user}
