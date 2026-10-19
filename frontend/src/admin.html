@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Админ-панель — услуги и бюджеты</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="bg-circles" id="bg"></div>
+
+    <div class="container">
+      <header class="hero" style="padding-bottom: 0">
+        <div class="brand">Aurum Detailing · Admin</div>
+        <h1>Услуги и диапазоны бюджета</h1>
+      </header>
+
+      <section class="card">
+        <div class="topbar">
+          <div>
+            <h2>Настройки сервиса</h2>
+            <p class="sub">Эти услуги клиент видит в выпадающем списке на сайте.</p>
+          </div>
+          <a href="/">← на клиентский сайт</a>
+        </div>
+
+        <form id="svc-form">
+          <div class="grid">
+            <div class="field">
+              <label for="services">Название услуги *</label>
+              <input type="text" id="services" placeholder="Напр. Полировка кузова" required />
+            </div>
+            <div class="field">
+              <label for="budget_range">Диапазон бюджета *</label>
+              <input type="text" id="budget_range" placeholder="Напр. 100k-900k" required />
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn" id="add-btn">Добавить услугу</button>
+          </div>
+          <div class="message" id="message"></div>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Текущие услуги</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Услуга</th>
+              <th>Бюджет</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr>
+              <td colspan="4">Загрузка…</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </body>
+</html>

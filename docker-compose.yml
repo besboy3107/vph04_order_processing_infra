@@ -8,9 +8,12 @@ services:
       - "${NGINX_BIND:-127.0.0.1}:${NGINX_PORT:-8080}:80"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/html:/usr/share/nginx/html:ro
+      # Клиентский сайт отдаём из собранного фронтенда (npm run build -> dist).
+      - ./frontend/dist:/usr/share/nginx/html:ro
     depends_on:
       pgadmin:
+        condition: service_started
+      backend:
         condition: service_started
     restart: unless-stopped
 
@@ -77,14 +80,25 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
 
-  # Будущий backend: добавить после появления приложения.
-  # backend:
-  #   build: ./backend
-  #   expose:
-  #     - "8000"
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
+  backend:
+    build: ./backend
+    container_name: vph04-backend
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # /docs открыт на время тестирования (как в уроке). В бою выставить 0.
+      BACKEND_DOCS_ENABLED: ${BACKEND_DOCS_ENABLED:-1}
+      BACKEND_ROOT_PATH: /api
+    # Приватный сервис: порт наружу НЕ публикуется, доступен только внутри сети и через nginx (/api).
+    expose:
+      - "8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:
