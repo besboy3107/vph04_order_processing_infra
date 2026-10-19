@@ -1,6 +1,9 @@
-# VPh04 — инфраструктура сайта обработки заказов
+# Сайт обработки заказов (Кейс 3, части 1-2)
 
-Учебная реализация первой части кейса: Nginx, PostgreSQL, pgAdmin, защищённый локальный Docker Registry и Watchtower. Backend намеренно оставлен закомментированным до следующего этапа.
+Учебный проект: приём заявок от «тёплых клиентов» с сохранением в БД внутри защищённого Docker-контура.
+
+- **Часть 1 — инфраструктура:** Nginx, PostgreSQL, pgAdmin, защищённый локальный Docker Registry, Watchtower.
+- **Часть 2 — приложение:** приватный backend на FastAPI (3 модели с SQL-докстрингом + CRUD + роуты), фронтенд (клиентский сайт с формой заявки и ползунком бюджета + админ-панель), связка через Nginx `/api`, авторизация админки и закрытый Swagger. Подробно: **[README-VPh05.md](README-VPh05.md)**, скриншоты — в [`screenshots/`](screenshots/).
 
 > Проект выполнен и развёрнут с помощью **Claude Code** (CLI-агент от Anthropic в терминале), а не Cursor. Подключение к серверу, установка Docker, написание конфигов, деплой и выпуск TLS-сертификатов выполнялись через Claude Code по SSH.
 
@@ -10,7 +13,9 @@
 
 | Сервис | Адрес | Проверка |
 |--------|-------|----------|
-| Сайт (входная точка Nginx) | https://test.rulewise.ru | `200`, HTTPS |
+| Клиентский сайт (форма заявки) | https://test.rulewise.ru/ | `200`, HTTPS |
+| Админ-панель (вход по логину) | https://test.rulewise.ru/admin | услуги + заявки |
+| Swagger API | https://test.rulewise.ru/api/docs | `404` (закрыт в части 2) |
 | pgAdmin | https://test.rulewise.ru/pgadmin/ | логин по `.env` |
 | Docker Registry | https://reg-test.rulewise.ru/v2/ | `401` без ключа, `200` с ключом |
 
@@ -18,7 +23,8 @@
 
 ## Состав
 
-- `nginx` — единственная HTTP-точка входа приложения, порт `8080`.
+- `nginx` — единственная HTTP-точка входа, порт `8080`: отдаёт собранный фронтенд и проксирует `/api` в backend, `/pgadmin/` в pgAdmin.
+- `backend` (часть 2) — FastAPI, приватный (`expose 8000`, наружу не публикуется), доступен только через Nginx `/api`.
 - `postgres` — внутренняя PostgreSQL 16, наружу порт не публикуется.
 - `pgadmin` — доступен через Nginx по `/pgadmin/`, работает в server-режиме с логином (`PGADMIN_DEFAULT_EMAIL` / `PGADMIN_DEFAULT_PASSWORD` из `.env`).
 - `registry` — Docker Registry с Basic Auth, порт `5000`.
