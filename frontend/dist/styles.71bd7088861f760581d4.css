@@ -313,8 +313,225 @@ th {
   font-weight: 700;
 }
 
+/* --- Вторичная кнопка / мелкие кнопки в таблице --- */
+.btn.ghost {
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.mini {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 9px;
+  padding: 5px 10px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.mini.row-del {
+  color: var(--err);
+  border-color: #f0c7bd;
+}
+
+.mini.row-save {
+  color: var(--ok);
+  border-color: #bfe6ce;
+}
+
+.row-actions {
+  text-align: right;
+  white-space: nowrap;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+tr.editing input {
+  width: 100%;
+  padding: 7px 9px;
+  font-size: 14px;
+}
+
+/* --- Бейджи температуры лида --- */
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge.hot {
+  background: #fbe3dc;
+  color: #b4452f;
+}
+
+.badge.warm {
+  background: #fdf1d6;
+  color: #9a7a16;
+}
+
+.badge.cold {
+  background: #e4edf6;
+  color: #3a5a7a;
+}
+
+.score {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* --- Модальные окна --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 36, 48, 0.45);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  z-index: 50;
+  overflow-y: auto;
+}
+
+.modal {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 820px;
+  border: 1px solid var(--line);
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-head h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+
+.modal-close {
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.modal-body {
+  padding: 22px 24px;
+}
+
+.modal-foot {
+  padding: 0 24px 22px;
+}
+
+.contact {
+  background: var(--gold-soft);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.lead-summary {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.lead-summary .reasons {
+  color: var(--muted);
+}
+
+.kv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+}
+
+.kv {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 6px;
+}
+
+.kv span {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* --- Карточки статистики --- */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.stat-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.stat-main {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+  margin: 6px 0 2px;
+}
+
+.stat-sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.heatmap {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+}
+
 @media (max-width: 640px) {
   .grid {
+    grid-template-columns: 1fr;
+  }
+  .kv-grid,
+  .stat-cards {
     grid-template-columns: 1fr;
   }
 }

@@ -10,12 +10,11 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, FastAPI
 
 from app.core import db
 from app.core.config import DOCS_ENABLED, ROOT_PATH
-from app.core.security import require_admin
-from app.routes import admin_settings, applications, behavior_metrics
+from app.routes import admin_settings, applications, auth, behavior_metrics
 
 
 @asynccontextmanager
@@ -28,7 +27,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="VPh05 — обработка заказов (backend)",
+    title="Обработка заказов (backend, Кейс 3 ч.3)",
     version="1.0.0",
     lifespan=lifespan,
     root_path=ROOT_PATH,
@@ -41,6 +40,7 @@ app = FastAPI(
 
 # Один общий роут, к которому подключаются все остальные.
 api = APIRouter()
+api.include_router(auth.router)
 api.include_router(admin_settings.router)
 api.include_router(applications.router)
 api.include_router(behavior_metrics.router)
@@ -50,9 +50,3 @@ app.include_router(api)
 @app.get("/health", tags=["service"])
 def health():
     return {"status": "ok"}
-
-
-@app.get("/admin/check", tags=["admin"])
-def admin_check(user: str = Depends(require_admin)):
-    """Проверка логина админ-панели: 200 при верных данных, иначе 401."""
-    return {"ok": True, "user": user}

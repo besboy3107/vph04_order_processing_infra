@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from pydantic import BaseModel, Field
+
+
+class AuthIn(BaseModel):
+    username: str = Field(min_length=3, max_length=64, description="Логин администратора")
+    password: str = Field(min_length=6, max_length=128, description="Пароль")
 
 
 class AdminSettingIn(BaseModel):
@@ -34,9 +37,11 @@ class ApplicationIn(BaseModel):
 
 
 class BehaviorMetricIn(BaseModel):
-    application_id: int = Field(gt=0)
+    """Анонимная телеметрия. application_id принимаем для совместимости с фронтом,
+    но backend его игнорирует и никуда не сохраняет (требование части 3)."""
+
+    application_id: int = 0
     time_on_page: int = 0
-    clicks: int = 0
-    hovers: int = 0
-    returns: int = 0
-    details: dict[str, Any] = Field(default_factory=dict)
+    buttons_clicked: str = ""
+    cursor_positions: str = ""
+    return_frequency: int = 0

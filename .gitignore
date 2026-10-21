@@ -9,3 +9,7 @@ pgadmin_data/
 *.png
 *.jpg
 *.zip
+
+# Python
+__pycache__/
+*.pyc

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Админ-панель — услуги и бюджеты</title>
+    <title>Админ-панель — услуги, заявки, метрики</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,10 +20,10 @@
         <h1>Панель администратора</h1>
       </header>
 
-      <!-- Экран входа -->
+      <!-- Экран входа / регистрации -->
       <section class="card" id="login" style="max-width: 460px; margin-left: auto; margin-right: auto">
-        <h2>Вход</h2>
-        <p class="sub">Доступ только для администратора.</p>
+        <h2 id="auth-title">Вход</h2>
+        <p class="sub" id="auth-sub">Доступ только для администратора.</p>
         <form id="login-form">
           <div class="field">
             <label for="login-user">Логин</label>
@@ -35,6 +35,10 @@
           </div>
           <div class="actions">
             <button type="submit" class="btn" id="login-btn">Войти</button>
+            <!-- Кнопка регистрации видна, только пока в системе нет ни одного админа -->
+            <button type="button" class="btn ghost" id="register-btn" style="display: none">
+              Зарегистрироваться
+            </button>
           </div>
           <div class="message" id="login-message"></div>
         </form>
@@ -74,13 +78,14 @@
 
         <section class="card">
           <h2>Текущие услуги</h2>
+          <p class="sub">Редактирование и удаление — прямо в таблице.</p>
           <table>
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Услуга</th>
                 <th>Бюджет</th>
-                <th></th>
+                <th style="width: 170px; text-align: right">Действия</th>
               </tr>
             </thead>
             <tbody id="rows">
@@ -90,23 +95,60 @@
         </section>
 
         <section class="card">
-          <h2>Заявки клиентов</h2>
-          <p class="sub">Персональные данные — доступны только после входа.</p>
+          <div class="topbar">
+            <div>
+              <h2>Заявки клиентов</h2>
+              <p class="sub">Отсортированы по «температуре» лида — самые горячие вверху.</p>
+            </div>
+            <button type="button" class="btn ghost" id="stats-btn">📊 Статистика пользователей</button>
+          </div>
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>Приоритет</th>
                 <th>Клиент</th>
                 <th>Услуга</th>
                 <th>Бюджет</th>
-                <th>Связь</th>
+                <th>Отдел</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="app-rows">
-              <tr><td colspan="5">Загрузка…</td></tr>
+              <tr><td colspan="6">Загрузка…</td></tr>
             </tbody>
           </table>
         </section>
+      </div>
+    </div>
+
+    <!-- Модалка: детали заявки -->
+    <div class="modal-overlay" id="app-modal" style="display: none">
+      <div class="modal">
+        <div class="modal-head">
+          <h3 id="app-modal-title">Заявка</h3>
+          <button class="modal-close" data-close="app-modal">✕</button>
+        </div>
+        <div class="modal-body" id="app-modal-body"></div>
+        <div class="modal-foot" id="app-modal-foot"></div>
+      </div>
+    </div>
+
+    <!-- Модалка: статистика пользователей -->
+    <div class="modal-overlay" id="stats-modal" style="display: none">
+      <div class="modal">
+        <div class="modal-head">
+          <h3>Статистика пользователей</h3>
+          <button class="modal-close" data-close="stats-modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="stat-cards" id="stat-cards"></div>
+          <h4 style="margin: 22px 0 8px">Heatmap наведения курсора</h4>
+          <p class="sub" style="margin-bottom: 10px">
+            Чем ярче и крупнее круг — тем чаще там был курсор клиентов.
+          </p>
+          <canvas id="heatmap" width="760" height="420" class="heatmap"></canvas>
+          <p class="hint" id="heatmap-hint"></p>
+        </div>
       </div>
     </div>
   </body>

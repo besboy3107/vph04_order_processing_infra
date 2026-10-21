@@ -1,11 +1,13 @@
-"""Роут behavior_metrics: метрики поведения, привязанные к заявке 1:1."""
+"""Роут behavior_metrics: анонимная телеметрия клиентского сайта.
+
+POST открыт (сайт шлёт данные каждую секунду), чтение и агрегация — под админом.
+"""
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Query
 
 from app.core.security import require_admin
-from app.models.applications import ApplicationCRUD
 from app.models.behavior_metrics import BehaviorMetricCRUD
 from app.schemas import BehaviorMetricIn
 
@@ -15,27 +17,22 @@ admin_only = [Depends(require_admin)]
 
 
 @router.get("", dependencies=admin_only)
-def list_metrics():
-    return BehaviorMetricCRUD.list()
+def list_metrics(skip: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=1000)):
+    return BehaviorMetricCRUD.list(skip, limit)
 
 
-@router.get("/{application_id}", dependencies=admin_only)
-def get_metric(application_id: int):
-    item = BehaviorMetricCRUD.get(application_id)
-    if item is None:
-        raise HTTPException(status_code=404, detail="Метрики не найдены")
-    return item
+@router.get("/stats", dependencies=admin_only)
+def metrics_stats():
+    """Агрегаты времени на странице за день/неделю/месяц для модалки статистики."""
+    return BehaviorMetricCRUD.time_stats()
 
 
+# Приём метрик с сайта — публичный и без проверок: пишем анонимно, append-only.
 @router.post("", status_code=201)
 def create_metric(payload: BehaviorMetricIn):
-    if ApplicationCRUD.get(payload.application_id) is None:
-        raise HTTPException(status_code=404, detail="Заявка не найдена")
-    return BehaviorMetricCRUD.upsert(
-        payload.application_id,
-        payload.time_on_page,
-        payload.clicks,
-        payload.hovers,
-        payload.returns,
-        payload.details,
+    return BehaviorMetricCRUD.create(
+        time_on_page=payload.time_on_page,
+        buttons_clicked=payload.buttons_clicked,
+        cursor_positions=payload.cursor_positions,
+        return_frequency=payload.return_frequency,
     )

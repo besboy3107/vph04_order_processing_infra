@@ -33,15 +33,32 @@ def wait_for_db(timeout: float = 60.0) -> None:
     raise RuntimeError(f"PostgreSQL недоступен за {timeout}s: {last_err}")
 
 
+def _migrate_behavior_metrics() -> None:
+    """Часть 3 сменила схему behavior_metrics на анонимную (без application_id).
+
+    Если в базе осталась старая таблица (с колонкой application_id) — дропаем её,
+    чтобы CREATE TABLE пересоздал новую. Данные учебной телеметрии не важны.
+    """
+    with pool.connection() as conn:
+        cur = conn.execute(
+            "SELECT 1 FROM information_schema.columns "
+            "WHERE table_name = 'behavior_metrics' AND column_name = 'application_id'"
+        )
+        if cur.fetchone():
+            conn.execute("DROP TABLE IF EXISTS behavior_metrics")
+
+
 def init_schema() -> None:
     """Создаём таблицы из SQL, лежащего в докстрингах классов-моделей."""
     # Импорт здесь, чтобы избежать циклических импортов на уровне модуля.
     from app.models.admin_settings import AdminSetting
+    from app.models.admins import Admin
     from app.models.applications import Application
     from app.models.behavior_metrics import BehaviorMetric
 
-    # Порядок важен: applications раньше behavior_metrics (внешний ключ 1:1).
-    for model in (AdminSetting, Application, BehaviorMetric):
+    _migrate_behavior_metrics()
+
+    for model in (AdminSetting, Admin, Application, BehaviorMetric):
         sql = (model.__doc__ or "").strip()
         if not sql:
             raise RuntimeError(f"У модели {model.__name__} нет SQL в докстринге")

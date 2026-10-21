@@ -1,9 +1,10 @@
-"""Роут applications: приём заявок с клиентского сайта."""
+"""Роут applications: приём заявок с сайта + ранжирование по «температуре» лида."""
 
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.core.scoring import score_application
 from app.core.security import require_admin
 from app.models.applications import ApplicationCRUD
 from app.schemas import ApplicationIn
@@ -14,9 +15,16 @@ router = APIRouter(prefix="/applications", tags=["applications"])
 admin_only = [Depends(require_admin)]
 
 
+def _with_score(app: dict) -> dict:
+    return {**app, "lead": score_application(app)}
+
+
 @router.get("", dependencies=admin_only)
 def list_applications():
-    return ApplicationCRUD.list()
+    """Заявки с посчитанной оценкой, отсортированные по убыванию приоритета."""
+    items = [_with_score(a) for a in ApplicationCRUD.list()]
+    items.sort(key=lambda a: a["lead"]["score"], reverse=True)
+    return items
 
 
 @router.get("/{item_id}", dependencies=admin_only)
@@ -24,7 +32,7 @@ def get_application(item_id: int):
     item = ApplicationCRUD.get(item_id)
     if item is None:
         raise HTTPException(status_code=404, detail="Заявка не найдена")
-    return item
+    return _with_score(item)
 
 
 # Приём заявки с клиентского сайта остаётся публичным.

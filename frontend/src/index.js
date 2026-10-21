@@ -1,6 +1,6 @@
 import "./styles.css";
 import { api } from "./api.js";
-import { createTracker } from "./metrics.js";
+import { startMetrics } from "./metrics.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -120,13 +120,7 @@ async function onSubmit(e) {
   btn.disabled = true;
   btn.textContent = "Отправляем…";
   try {
-    const created = await api.createApplication(collect());
-    // Метрики поведения привязываем к созданной заявке (1:1).
-    try {
-      await api.sendMetrics({ application_id: created.id, ...tracker.snapshot() });
-    } catch (_) {
-      /* метрики не критичны для пользователя */
-    }
+    await api.createApplication(collect());
     showMessage("ok", "Заявка отправлена! Мы свяжемся с вами в ближайшее время.");
     $("lead-form").reset();
     applyServiceRange();
@@ -138,11 +132,12 @@ async function onSubmit(e) {
   }
 }
 
-const tracker = createTracker();
-
 spawnCircles();
 syncBudgetLabel();
 $("budget").addEventListener("input", syncBudgetLabel);
 $("service").addEventListener("change", applyServiceRange);
 $("lead-form").addEventListener("submit", onSubmit);
 loadServices();
+
+// Анонимная телеметрия: шлём поведение раз в секунду (время, клики, курсор).
+startMetrics();

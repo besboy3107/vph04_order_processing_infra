@@ -1,13 +1,14 @@
 """Модель behavior_metrics + CRUD.
 
-Поведение пользователя на странице: сколько времени провёл, сколько кликов,
-где зависал курсором, как часто возвращался. Связь с заявкой — один-к-одному:
-первичный ключ совпадает с applications.id (внешний ключ).
+Анонимная поведенческая телеметрия клиентского сайта: сколько секунд человек
+провёл на странице, какие кнопки нажимал, где был курсор, как часто возвращался
+на вкладку. Данные пишутся append-only (каждую секунду новая строка) и ни с кем
+не связаны — никаких проверок на существование заявки (часть 3 урока явно
+требует убрать логику application_id и писать метрики анонимно).
 """
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from app.core.db import pool
@@ -16,13 +17,12 @@ from app.core.db import pool
 class BehaviorMetric:
     """
     CREATE TABLE IF NOT EXISTS behavior_metrics (
-        application_id INTEGER PRIMARY KEY REFERENCES applications(id) ON DELETE CASCADE,
-        time_on_page   INTEGER NOT NULL DEFAULT 0,
-        clicks         INTEGER NOT NULL DEFAULT 0,
-        hovers         INTEGER NOT NULL DEFAULT 0,
-        returns        INTEGER NOT NULL DEFAULT 0,
-        details        JSONB NOT NULL DEFAULT '{}'::jsonb,
-        created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+        id               SERIAL PRIMARY KEY,
+        time_on_page     INTEGER NOT NULL DEFAULT 0,
+        buttons_clicked  TEXT NOT NULL DEFAULT '',
+        cursor_positions TEXT NOT NULL DEFAULT '',
+        return_frequency INTEGER NOT NULL DEFAULT 0,
+        created_at       TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     """
 
@@ -30,46 +30,54 @@ class BehaviorMetric:
 
 
 class BehaviorMetricCRUD:
-    """CRUD-операции для метрик поведения."""
+    """CRUD-операции для анонимных метрик поведения."""
 
     @staticmethod
-    def list() -> list[dict[str, Any]]:
+    def list(skip: int = 0, limit: int = 100) -> list[dict[str, Any]]:
         with pool.connection() as conn:
             cur = conn.execute(
-                "SELECT application_id, time_on_page, clicks, hovers, returns, details, created_at "
-                "FROM behavior_metrics ORDER BY application_id DESC"
+                "SELECT id, time_on_page, buttons_clicked, cursor_positions, "
+                "return_frequency, created_at FROM behavior_metrics "
+                "ORDER BY id DESC OFFSET %s LIMIT %s",
+                (max(0, skip), max(1, min(limit, 1000))),
             )
             return cur.fetchall()
 
     @staticmethod
-    def get(application_id: int) -> dict[str, Any] | None:
+    def create(
+        time_on_page: int = 0,
+        buttons_clicked: str = "",
+        cursor_positions: str = "",
+        return_frequency: int = 0,
+    ) -> dict[str, Any]:
         with pool.connection() as conn:
             cur = conn.execute(
-                "SELECT application_id, time_on_page, clicks, hovers, returns, details, created_at "
-                "FROM behavior_metrics WHERE application_id = %s",
-                (application_id,),
+                "INSERT INTO behavior_metrics "
+                "(time_on_page, buttons_clicked, cursor_positions, return_frequency) "
+                "VALUES (%s, %s, %s, %s) "
+                "RETURNING id, time_on_page, buttons_clicked, cursor_positions, "
+                "return_frequency, created_at",
+                (int(time_on_page), buttons_clicked or "", cursor_positions or "", int(return_frequency)),
             )
             return cur.fetchone()
 
     @staticmethod
-    def upsert(
-        application_id: int,
-        time_on_page: int = 0,
-        clicks: int = 0,
-        hovers: int = 0,
-        returns: int = 0,
-        details: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
-        payload = json.dumps(details or {})
+    def time_stats() -> dict[str, Any]:
+        """Среднее и максимальное время на странице за день / неделю / месяц."""
         with pool.connection() as conn:
             cur = conn.execute(
-                "INSERT INTO behavior_metrics "
-                "(application_id, time_on_page, clicks, hovers, returns, details) "
-                "VALUES (%s, %s, %s, %s, %s, %s::jsonb) "
-                "ON CONFLICT (application_id) DO UPDATE SET "
-                "time_on_page = EXCLUDED.time_on_page, clicks = EXCLUDED.clicks, "
-                "hovers = EXCLUDED.hovers, returns = EXCLUDED.returns, details = EXCLUDED.details "
-                "RETURNING application_id, time_on_page, clicks, hovers, returns, details, created_at",
-                (application_id, time_on_page, clicks, hovers, returns, payload),
+                """
+                SELECT
+                  COALESCE(ROUND(AVG(time_on_page) FILTER (WHERE created_at >= now() - interval '1 day')), 0)  AS avg_day,
+                  COALESCE(MAX(time_on_page)       FILTER (WHERE created_at >= now() - interval '1 day'), 0)   AS max_day,
+                  COALESCE(ROUND(AVG(time_on_page) FILTER (WHERE created_at >= now() - interval '7 days')), 0) AS avg_week,
+                  COALESCE(MAX(time_on_page)       FILTER (WHERE created_at >= now() - interval '7 days'), 0)  AS max_week,
+                  COALESCE(ROUND(AVG(time_on_page) FILTER (WHERE created_at >= now() - interval '30 days')), 0) AS avg_month,
+                  COALESCE(MAX(time_on_page)       FILTER (WHERE created_at >= now() - interval '30 days'), 0)  AS max_month,
+                  COUNT(*) AS samples
+                FROM behavior_metrics
+                """
             )
-            return cur.fetchone()
+            row = cur.fetchone()
+            # psycopg возвращает Decimal для ROUND/AVG — приводим к int для JSON.
+            return {k: int(v) for k, v in row.items()}
